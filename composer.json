@@ -1,0 +1,45 @@
+{
+    "name": "allegro/php-protobuf",
+    "description": "Google's Protocol Buffers for PHP",
+    "type": "library",
+    "keywords": [
+        "protocol buffers",
+        "data",
+        "pb"
+    ],
+    "homepage": "https://github.com/allegro/php-protobuf",
+    "autoload": {
+        "psr-4": {
+            "Allegro\\": "./src/Allegro",
+            "Gary\\": "./src/Gary",
+            "Google\\Protobuf\\Internal\\": "./src/Google/Protobuf/Internal",
+            "GPBMetadata\\Google\\Protobuf\\Internal\\Compiler\\": "./src/GPBMetadata/Google/Protobuf/Internal/Compiler"
+        }
+    },
+    "authors": [
+        {
+            "name": "Hubert Jagodziński",
+            "email": "hubert.jagodzinski@allegro.pl",
+            "homepage": "https://github.com/hjagodzinski",
+            "role": "Original Author"
+        },
+        {
+            "name": "Mateusz Gajewski",
+            "email": "mateusz.gajewski@allegro.pl",
+            "homepage": "https://github.com/wendigo",
+            "role": "Contributor"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/allegro/php-protobuf/issues"
+    },
+    "require": {
+        "php": ">=5.3",
+        "pear/console_commandline": "^1.2",
+        "google/protobuf": "^3.5"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^6.5"
+    },
+    "license": "BSD-3-Clause"
+}

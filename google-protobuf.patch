@@ -1,0 +1,24 @@
+--- vendor/google/protobuf/php/src/Google/Protobuf/Internal/DescriptorPool.php	2018-01-05 14:54:11.000000000 +0800
++++ vendor/google/protobuf/php/src/Google/Protobuf/Internal/DescriptorPool.php	2018-01-05 14:55:36.000000000 +0800
+@@ -147,13 +147,17 @@
+             switch ($field->getType()) {
+                 case GPBType::MESSAGE:
+                     $proto = $field->getMessageType();
+-                    $field->setMessageType(
+-                        $this->getDescriptorByProtoName($proto));
++                    if (is_string($proto)) { // prevent link multiple times
++                        $field->setMessageType(
++                            $this->getDescriptorByProtoName($proto));
++                    }
+                     break;
+                 case GPBType::ENUM:
+                     $proto = $field->getEnumType();
+-                    $field->setEnumType(
+-                        $this->getEnumDescriptorByProtoName($proto));
++                    if (is_string($proto)) { // prevent link multiple times
++                        $field->setEnumType(
++                            $this->getEnumDescriptorByProtoName($proto));
++                    }
+                     break;
+                 default:
+                     break;
