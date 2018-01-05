@@ -11,4 +11,4 @@ if (!file_exists($composerAutoload)) {
 $loader = require_once $composerAutoload;
 
 $compiler = new \Gary\Protobuf\Generator\Compiler();
-$compiler->run(__DIR__ . "/protoc-gen-plugin.php");
+$compiler->runAsPlugin();

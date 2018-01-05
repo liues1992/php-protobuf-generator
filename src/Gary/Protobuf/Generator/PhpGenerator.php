@@ -465,9 +465,10 @@ TAG;
         if ($field->isMap()) {
             $valueField = $field->getMessageType()->getFieldByNumber(2);
             if ($valueField->getType() == GPBType::MESSAGE) {
-                $tmpType = '\\' . $valueField->getMessageType()->getClass() . "::class";
+                $tmpType = 'GPBType::MESSAGE, \\' . $valueField->getMessageType()->getClass() . "::class";
             } else {
-                $tmpType = 'GPBType::' . strtoupper($field->getMessageType()->getFieldByNumber(1)->getSimpleTypeName());
+                $tmpType =
+                    'GPBType::' . strtoupper($field->getMessageType()->getFieldByNumber(1)->getSimpleTypeName());
             }
             $checkLine = sprintf('$value = GPBUtil::checkMapField($value, GPBType::%s, %s);',
                 strtoupper($field->getMessageType()->getFieldByNumber(1)->getSimpleTypeName()),

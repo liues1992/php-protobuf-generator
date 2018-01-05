@@ -8,33 +8,33 @@ class Compiler
     const MINIMUM_PROTOC_VERSION = '2.6.0';
     const VERSION = '0.11.0';
 
+    public function runAsPlugin()
+    {
+        $data = file_get_contents('php://stdin');
+        $request = new CodeGeneratorRequest();
+        try {
+            $request->mergeFromString($data);
+        } catch (\Exception $ex) {
+            Logger::error('Unable to parse a message passed by protoc.' . $ex->getMessage() . '.');
+            exit(1);
+        }
+        $generator = new PhpGenerator();
+        try {
+            $response = $generator->generate($request);
+            echo $response->serializeToString();
+        } catch (\Exception $ex) {
+            Logger::error($ex->getMessage() . '.');
+            exit(1);
+        }
+    }
+
     /**
      * @param string $pluginExecutable
      *
-     * @return null
      */
     public function run($pluginExecutable)
     {
-        if ($this->hasStdin()) {
-            $data = file_get_contents('php://stdin');
-            $request = new CodeGeneratorRequest();
-            try {
-                $request->mergeFromString($data);
-            } catch (\Exception $ex) {
-                Logger::error('Unable to parse a message passed by protoc.' . $ex->getMessage() . '.');
-                exit(1);
-            }
-            $generator = new PhpGenerator();
-            try {
-                $response = $generator->generate($request);
-                echo $response->serializeToString();
-            } catch (\Exception $ex) {
-                Logger::error($ex->getMessage() . '.');
-                exit(1);
-            }
-        } else {
-            $this->runProtoc($pluginExecutable);
-        }
+        $this->runProtoc($pluginExecutable);
     }
 
     /**
@@ -45,19 +45,6 @@ class Compiler
         return 'WIN' === strtoupper(substr(PHP_OS, 0, 3));
     }
 
-    /**
-     * @return bool
-     */
-    private function hasStdin()
-    {
-        $stdin = fopen('php://stdin', 'r');
-        $read = array($stdin);
-        $write = null;
-        $except = null;
-        $ret = stream_select($read, $write, $except, 0);
-        fclose($stdin);
-        return $ret == 1;
-    }
 
     /**
      * @return \Console_CommandLine_Result
