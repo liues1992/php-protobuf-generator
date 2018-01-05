@@ -241,7 +241,7 @@ TAG;
 
         $location = $file->getSourceCodeLocationForPath($descriptor->getSourceCodePath());
         if (!$location) {
-            throw  new \Exception("cannot find source code location");
+            throw  new \Exception("cannot find source code location:" . $descriptor->getFullName());
         }
         if ($location->getLeadingComments()) {
             $comment->append($location->getLeadingComments());

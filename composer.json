@@ -33,6 +33,12 @@
     "support": {
         "issues": "https://github.com/allegro/php-protobuf/issues"
     },
+    "scripts": {
+        "test": "./vendor/bin/phpunit",
+        "post-install-cmd": [
+            "patch -p0 < google-protobuf.patch || true"
+        ]
+    },
     "require": {
         "php": ">=5.3",
         "pear/console_commandline": "^1.2",

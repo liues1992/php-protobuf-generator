@@ -7,18 +7,17 @@ https://github.com/google/protobuf/tree/master/php
 
 # Requirements
 - Unix/Linux system
-- php >= 5.3 and composer installed
+- php >= 7.0 and composer installed
 - Only support proto3 syntax proto file
 - protoc installed, version >= 3.5
 
 # Usage
 - clone the code cd cd to the directory
 - `composer install`
-- `patch -p0 google-protobuf.patch` # patch the official protobuf library...
 - `./protoc-gen-php -o build tests/test3.proto`
 
 ### Run test
-`./test.sh`
+`composer test`
 
 # TODO
 - [ ] More test case
