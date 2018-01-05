@@ -2,9 +2,12 @@
 Generate php protobuf code using php
 `./protoc-gen-php -o build tests/test3.proto`
 
+The generated code is meant to work with protobuf's official php implementation:
+https://github.com/google/protobuf/tree/master/php 
+
 # Requirements
-- Unix\Linux system
-- php >= 5.3 and composer
+- Unix/Linux system
+- php >= 5.3 and composer installed
 - Only support proto3 syntax proto file
 - protoc installed, version >= 3.5
 
