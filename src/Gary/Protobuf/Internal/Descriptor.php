@@ -221,10 +221,8 @@ class Descriptor
                 $nested_proto, $file_proto, $message_name_without_package);
             $desc->addNestedType($n);
             $n->setContaining($desc);
-            if (!$n->isMapEntry()) {
-                $n->setIndex($i);
-                $i++;
-            }
+            $n->setIndex($i);
+            $i++;
         }
 
         // Handle nested enum.

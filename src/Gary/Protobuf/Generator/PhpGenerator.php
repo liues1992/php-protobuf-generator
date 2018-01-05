@@ -241,7 +241,8 @@ TAG;
 
         $location = $file->getSourceCodeLocationForPath($descriptor->getSourceCodePath());
         if (!$location) {
-            throw  new \Exception("cannot find source code location:" . $descriptor->getFullName());
+            throw  new \Exception("cannot find source code location:" . $descriptor->getFullName()
+                . " path: " . implode(", ", $descriptor->getSourceCodePath()));
         }
         if ($location->getLeadingComments()) {
             $comment->append($location->getLeadingComments());
@@ -464,7 +465,7 @@ TAG;
         if ($field->isMap()) {
             $valueField = $field->getMessageType()->getFieldByNumber(2);
             if ($valueField->getType() == GPBType::MESSAGE) {
-                $tmpType = '\\' . $valueField->getMessageType()->getClass();
+                $tmpType = '\\' . $valueField->getMessageType()->getClass() . "::class";
             } else {
                 $tmpType = 'GPBType::' . strtoupper($field->getMessageType()->getFieldByNumber(1)->getSimpleTypeName());
             }

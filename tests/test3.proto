@@ -30,10 +30,11 @@ message Foo
 	Baz optional_embedded_field = 25;
 	repeated Bar repeated_obj_field = 26;
 	repeated string repeated_string_field = 27;
+	map<int32, Embedded> map_field = 28;
 	enum Enum {
 	    EnumOne = 0; // enum comment
 	}
-	message Embbeded {
+	message Embedded {
 	    int32 f1 = 1;
 	    message Deep {
 	        int32 f1 = 1;
@@ -51,22 +52,23 @@ message Baz
 	int32 id = 1;
 }
 
-service Room
+service Item
 {
       rpc getByIds (GetByIdsRequest) returns (GetByIdsResponse);
 }
 
 message GetByIdsRequest
 {
-    repeated int32 ids = 1; // 房间号或者短位号
+    repeated int32 ids = 1; // input
 }
 
 message GetByIdsResponse
 {
     int32 code = 1;
     string msg = 2;
-    map<int32, RoomInfo> data = 3; // 房间号或者短位号
-    message RoomInfo {
-        int32 room_id = 1;
+    map<int32, Info> data = 3; // data
+    // info msg
+    message Info {
+        int32 info_id = 1; // info id
     }
 }
