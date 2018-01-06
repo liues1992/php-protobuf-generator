@@ -13,7 +13,7 @@ trait DescriptorTrait
 {
     private $containing;
     private $name;
-    private $path = [];
+    private $path = null;
     private $index = 0;
     private $proto;
 
@@ -74,37 +74,43 @@ trait DescriptorTrait
     ];
 
     /**
+     * see protobuf's descriptor.proto for the concept of path
      * @return array
      * @throws \Exception
      */
     public function getSourceCodePath()
     {
-        $path = [];
-        $current = $this;
-        while ($current && !$current instanceof FileDescriptor) {
-            $parent = $current->getContaining();
-            if (!$parent) {
-                throw new \Exception("parent cannot be null");
-            }
-            array_unshift($path, $current->getIndex());
-            // field number in definition:descriptor.proto
-            $name = $this->getClassShortName($current);
-            $pname = $this->getClassShortName($parent);
-            if (isset(self::$pathMap[$name])) {
-                if (is_int(self::$pathMap[$name])) {
-                    $fieldNumber = self::$pathMap[$name];
-                } else {
-                    if (isset(self::$pathMap[$name][$pname])) {
-                        $fieldNumber = self::$pathMap[$name][$pname];
-                    } else {
-                        throw new \Exception("un implemented situation $name $pname");
-                    }
+        if ($this->path === null) {
+            $path = [];
+            $current = $this;
+            while ($current && !$current instanceof FileDescriptor) {
+                $parent = $current->getContaining();
+                if (!$parent) {
+                    throw new \Exception("parent cannot be null");
                 }
-            } else {
-                throw new \Exception("unimplemented situation $name $pname");
+                array_unshift($path, $current->getIndex());
+                // field number in definition:descriptor.proto
+                $name = $this->getClassShortName($current);
+                $pname = $this->getClassShortName($parent);
+                if (isset(self::$pathMap[$name])) {
+                    if (is_int(self::$pathMap[$name])) {
+                        $fieldNumber = self::$pathMap[$name];
+                    } else {
+                        if (isset(self::$pathMap[$name][$pname])) {
+                            $fieldNumber = self::$pathMap[$name][$pname];
+                        } else {
+                            throw new \Exception("unimplemented situation $name $pname");
+                        }
+                    }
+                } else {
+                    throw new \Exception("unimplemented situation $name $pname");
+                }
+                array_unshift($path, $fieldNumber);
+                $current = $parent;
             }
-            array_unshift($path, $fieldNumber);
-            $current = $parent;
+            $this->path = $path;
+        } else {
+            $path = $this->path;
         }
         return $path;
     }
