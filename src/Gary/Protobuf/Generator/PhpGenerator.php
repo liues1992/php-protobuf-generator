@@ -2,9 +2,12 @@
 
 namespace Gary\Protobuf\Generator;
 
+use Gary\Protobuf\Compiler\CodeGeneratorInterface;
 use Gary\Protobuf\Internal\DescriptorBuilder;
 use Gary\Protobuf\Internal\FieldDescriptor;
 use Gary\Protobuf\Internal\FileDescriptor;
+use Gary\Protobuf\Internal\MethodDescriptor;
+use Gary\Protobuf\Internal\ServiceDescriptor;
 use Google\Protobuf\Internal\CodeGeneratorRequest;
 use Google\Protobuf\Internal\CodeGeneratorResponse;
 use Google\Protobuf\Internal\CodeGeneratorResponse_File;
@@ -15,7 +18,7 @@ use Google\Protobuf\Internal\FileDescriptorProto;
 use Google\Protobuf\Internal\FileDescriptorSet;
 use Google\Protobuf\Internal\GPBType;
 
-class PhpGenerator
+class PhpGenerator implements CodeGeneratorInterface
 {
     const CLASS_NAME_SEPARATOR = '_';
     const PHP_NAMESPACE_SEPARATOR = '\\';
@@ -56,10 +59,11 @@ class PhpGenerator
 
     /**
      * @param CodeGeneratorRequest $request
+     * @param FileDescriptor[]     $fileDescriptors
      *
      * @return CodeGeneratorResponse
      */
-    public function generate(CodeGeneratorRequest $request)
+    public function generate(CodeGeneratorRequest $request, $fileDescriptors): CodeGeneratorResponse
     {
 
         $this->customArguments = array();
@@ -71,8 +75,7 @@ class PhpGenerator
 
         $this->genMetadata($request);
 
-        $this->fileDescriptors = DescriptorBuilder::getBuilder()->getFileDescriptors($request->getProtoFile()->getIterator());
-        $fileDescriptors = $this->fileDescriptors;
+
         foreach ($fileDescriptors as $i => $fileDescriptor) {
             $this->_generateFiles($fileDescriptor);
         }
@@ -177,7 +180,6 @@ TAG;
 
     /**
      * @param FileDescriptor $file
-     *
      */
     private function _generateFiles($file)
     {
@@ -189,6 +191,11 @@ TAG;
         foreach ($file->getMessageType() as $i => $descriptor) {
             $this->_createClass($descriptor, $file);
         }
+
+        foreach ($file->getService() as $service) {
+            $this->_createService($service, $file);
+        }
+
     }
 
     /**
@@ -261,7 +268,6 @@ TAG;
             ->append('{')
             ->incrIndentation();
 
-        $this->_createClassConstructor($buffer, $file);
         $this->_createClassBody($descriptor->getField(), $buffer, $file);
 
         $buffer->decrIndentation()
@@ -273,7 +279,6 @@ TAG;
     /**
      * @param EnumDescriptor $descriptor
      * @param                $file
-     *
      */
     private function _createEnum(
         EnumDescriptor $descriptor, FileDescriptor $file
@@ -392,24 +397,48 @@ TAG;
             $comment->setIndentLevel($buffer->getIndentLevel());
             $file->getFileContent();
 
-            $location = $file->getSourceCodeLocationForPath($field->getSourceCodePath());
-            $span = $location->getSpan();
-            $code = $file->codeBySpan($span);
-            if ($location->getLeadingComments()) {
-                $comment->append($location->getLeadingComments());
-                $comment->newline();
-            }
-            if ($location->getTrailingComments()) {
-                $comment->append($location->getTrailingComments());
-                $comment->newline();
-            }
-            $comment->append(sprintf("Generated from protobuf field <code>$code</code>"));
+            $this->appendCommentFromSourceCode($comment, $file, $field);
             $buffer->append($comment);
-            $buffer->append('private $' . $field->getName() . ';');
+            $buffer->append('private $' . $field->getName() . ';')->newline();
         }
+
+        $this->_createClassConstructor($buffer, $file);
 
         foreach ($fields as $field) {
             $this->_describeSingleField($field, $buffer, $file);
+        }
+    }
+
+    /**
+     * @param CommentStringBuffer $comment
+     * @param FileDescriptor      $file
+     * @param object              $descriptor
+     * @param bool                $appendCodeInfo
+     */
+    private function appendCommentFromSourceCode(CommentStringBuffer $comment,
+                                                 FileDescriptor $file, $descriptor, $appendCodeInfo = true)
+    {
+        $location = $file->getSourceCodeLocationForPath($descriptor->getSourceCodePath());
+        if (!$location) {
+            throw new \RuntimeException("cannot get location, path: "  . var_export($descriptor->getSourceCodePath(), true));
+        }
+        $span = $location->getSpan();
+        $code = $file->codeBySpan($span);
+        if ($location->getLeadingComments()) {
+            $comment->append($location->getLeadingComments());
+            if ($appendCodeInfo) {
+                $comment->newline();
+            }
+        }
+
+        if ($location->getTrailingComments()) {
+            $comment->append($location->getTrailingComments());
+            if ($appendCodeInfo) {
+                $comment->newline();
+            }
+        }
+        if ($appendCodeInfo) {
+            $comment->append(sprintf("Generated from protobuf <code>$code</code>"));
         }
     }
 
@@ -427,14 +456,6 @@ TAG;
             $typeName = '\\' . $field->getMessageType()->getClass();
         }
 
-
-        $location = $file->getSourceCodeLocationForPath($field->getSourceCodePath());
-        $span = $location->getSpan();
-        $code = $file->codeBySpan($span);
-        $sourceInfo = sprintf("Generated from protobuf field <code>$code</code>");
-        $leading = $location->getLeadingComments();
-        $trailing = $location->getTrailingComments();
-
         /**
          * Set
          */
@@ -446,20 +467,12 @@ TAG;
             $retType = $typeName;
         }
         $comment = new CommentStringBuffer(self::TAB, self::EOL);
-        $comment->setIndentLevel($buffer->getIndentLevel());
-        if ($leading) {
-            $comment->append($leading);
-            $comment->newline();
-        }
-        if ($trailing) {
-            $comment->append($trailing);
-            $comment->newline();
-        }
-        $comment->append($sourceInfo)
-            ->appendParam(
-                'param',
-                $retType . ' $value'
-            )
+        $comment->alignWithBuffer($buffer);
+        $this->appendCommentFromSourceCode($comment, $file, $field);
+        $comment->appendParam(
+            'param',
+            $retType . ' $value'
+        )
             ->appendParam('return', '$this');
 
         if ($field->isMap()) {
@@ -520,16 +533,9 @@ TAG;
          */
         $comment = new CommentStringBuffer(self::TAB, self::EOL);
         $comment->setIndentLevel($buffer->getIndentLevel());
-        if ($leading) {
-            $comment->append($leading);
-            $comment->newline();
-        }
-        if ($trailing) {
-            $comment->append($trailing);
-            $comment->newline();
-        }
-        $comment->append($sourceInfo)
-            ->appendParam('return', $retType);
+        $this->appendCommentFromSourceCode($comment, $file, $field);
+
+        $comment->appendParam('return', $retType);
 
         $buffer->newline()
             ->append($comment)
@@ -544,7 +550,6 @@ TAG;
     /**
      * @param EnumValueDescriptorProto[] $enums
      * @param CodeStringBuffer           $buffer
-     *
      */
     private function _createEnumClassDefinition(array $enums, CodeStringBuffer $buffer)
     {
@@ -582,15 +587,11 @@ TAG;
     }
 
     /**
-     * @param CodeStringBuffer  $buffer
-     * @param FileDescriptor    $file
-     *
+     * @param CodeStringBuffer $buffer
+     * @param FileDescriptor   $file
      */
     private function _createClassConstructor(CodeStringBuffer $buffer, $file)
     {
-
-        $buffer->newline();
-
         $name = preg_replace('/(.*)(\.[\w\d]+)$/', '$1', $file->getName());
         $fileNamespace = implode("\\", array_map('ucfirst', explode('/', $name)));
         $buffer->append('public function __construct()')
@@ -606,7 +607,99 @@ TAG;
         $comment->append('Clears message values and sets default ones')
             ->newline()
             ->appendParam('return', 'null');
+    }
 
-        $buffer->newline();
+    /**
+     * @param $service
+     * @param $file
+     */
+    private function _createService(ServiceDescriptor $service, FileDescriptor $file)
+    {
+
+        $buffer = new CodeStringBuffer(self::TAB);
+        $fullName = $service->getClass();
+        list($shortName, $namespace) = $this->parseFullClassName($fullName);
+        $shortName .= "Client";
+
+        $comment = new CommentStringBuffer(self::TAB);
+        $comment->alignWithBuffer($buffer);
+        $this->appendCommentFromSourceCode($comment, $file, $service, false);
+        /**
+         * namespace
+         */
+        $buffer->newline()
+            ->append("namespace $namespace;")->newline()
+            ->append($comment)
+            ->append("class $shortName extends \\Grpc\\BaseStub")
+            ->append('{')
+            ->incrIndentation()->newline()
+            ->append('/**')
+            ->append(' * @param string $hostname hostname')
+            ->append(' * @param array $opts channel options')
+            ->append(' * @param \Grpc\Channel $channel (optional) re-use channel object')
+            ->append(' */')
+            ->append('public function __construct($hostname, $opts, $channel = null)')
+            ->append('{')
+            ->incrIndentation()
+            ->append('parent::__construct($hostname, $opts, $channel);')
+            ->decrIndentation()
+            ->append('}')
+            ->newline();
+
+        foreach ($service->getMethods() as $method) {
+            $this->_createRpcMethods($buffer, $service, $file, $method);
+        }
+
+
+        $buffer->decrIndentation();
+        $buffer->append('}');
+        $this->generateClass($shortName, $namespace, $buffer->__toString());
+    }
+
+    /**
+     * @param $fullName
+     *
+     * @return array [classname, namespace]
+     */
+    private function parseFullClassName($fullName)
+    {
+        $parts = explode("\\", $fullName);
+        $name = array_pop($parts);
+        $namespace = implode("\\", $parts);
+        return [$name, $namespace];
+    }
+
+    private function _createRpcMethods(CodeStringBuffer $buffer,
+                                       ServiceDescriptor $service,
+                                       FileDescriptor $file,
+                                       MethodDescriptor $method)
+    {
+        $comment = new CommentStringBuffer(self::TAB);
+        $comment->alignWithBuffer($buffer);
+        $this->appendCommentFromSourceCode($comment, $file, $method, false);
+        $requestClass = $method->getInputType()->getClass();
+        $responseClass = $method->getOutputType()->getClass();
+        $comment->append("@param \\$requestClass \$request ")
+            ->append('@param array $metadata metadata')
+            ->append('@param array $options call options');
+        $buffer->append($comment);
+        $methodName = implode('', array_map('ucfirst', explode("_", $method->getName())));
+        $serviceName = ltrim($service->getFullName(), ".");
+        $buffer->append("public function $methodName(")
+            ->incrIndentation()
+            ->append("\\$requestClass \$request,")
+            ->append("\$metadata = [], \$options = [])")
+            ->decrIndentation()
+            ->append("{")
+            ->incrIndentation()
+            ->append("return \$this->_simpleRequest('/$serviceName/" . $method->getName()."',")
+            ->incrIndentation()
+            ->append("\$request,")
+            ->append("['\\$responseClass', 'decode'],")
+            ->append('$metadata, $options);')
+            ->decrIndentation()
+            ->decrIndentation()
+            ->append('}');
+
     }
 }

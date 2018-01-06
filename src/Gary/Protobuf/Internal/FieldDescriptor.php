@@ -40,7 +40,6 @@ class FieldDescriptor
 {
     use DescriptorTrait;
 
-    private $name;
     private $json_name;
     private $setter;
     private $getter;
@@ -132,16 +131,6 @@ class FieldDescriptor
     public function getOneofIndex()
     {
         return $this->oneof_index;
-    }
-
-    public function setName($name)
-    {
-        $this->name = $name;
-    }
-
-    public function getName()
-    {
-        return $this->name;
     }
 
     public function setJsonName($json_name)

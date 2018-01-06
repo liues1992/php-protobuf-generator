@@ -38,21 +38,10 @@ class OneofDescriptor
 {
     use DescriptorTrait;
 
-    private $name;
     private $fields;
 
     public function __construct()
     {
-    }
-
-    public function setName($name)
-    {
-        $this->name = $name;
-    }
-
-    public function getName()
-    {
-        return $this->name;
     }
 
     public function addField(FieldDescriptor $field)

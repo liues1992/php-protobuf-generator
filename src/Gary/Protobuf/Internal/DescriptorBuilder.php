@@ -80,6 +80,10 @@ class DescriptorBuilder
             foreach ($file->getMessageType() as $desc) {
                 $this->crossLink($desc);
             }
+
+            foreach ($file->getService() as $service) {
+                $this->crossLinkService($service);
+            }
             unset($desc);
             $files[] = $file;
         }
@@ -114,6 +118,21 @@ class DescriptorBuilder
         return $this->realPool->getEnumDescriptorByProtoName($proto);
     }
 
+    private function crossLinkService(ServiceDescriptor $serviceDescriptor)
+    {
+        foreach ($serviceDescriptor->getMethods() as $method) {
+            if (is_string($method->getInputType())) {
+                $method->setInputType(
+                    $this->getDescriptorByProtoName($method->getInputType())
+                );
+            }
+            if (is_string($method->getOutputType())) {
+                $method->setOutputType(
+                    $this->getDescriptorByProtoName($method->getOutputType())
+                );
+            }
+        }
+    }
     private function crossLink(Descriptor $desc)
     {
         /** @var FieldDescriptor $field */

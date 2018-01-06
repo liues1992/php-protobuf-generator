@@ -12,8 +12,26 @@ namespace Gary\Protobuf\Internal;
 trait DescriptorTrait
 {
     private $containing;
+    private $name;
     private $path = [];
     private $index = 0;
+    private $proto;
+
+
+    public function setName($name)
+    {
+        $this->name = $name;
+    }
+
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    public function setProto($proto)
+    {
+        $this->proto = $proto;
+    }
 
     public function setIndex($i)
     {
@@ -39,7 +57,7 @@ trait DescriptorTrait
         // DescriptorProto:
         // repeated FieldDescriptorProto field = 2;
         // TODO FieldDescriptorProto is also used somewhere else
-        // We'll ingore extention for now
+        // We'll ignore extension for now
         'FieldDescriptor'     => 2,
         'Descriptor'          => [
             'Descriptor'     => 3, // repeated DescriptorProto nested_type = 3;
@@ -50,7 +68,9 @@ trait DescriptorTrait
             'Descriptor'     => 4, // repeated EnumDescriptorProto enum_type = 4;
         ],
         'EnumValueDescriptor' => 2, // repeated EnumValueDescriptorProto value = 2; message EnumDescriptorProto
-        'OneofDescriptor'     => 8  // repeated OneofDescriptorProto oneof_decl = 8; message DescriptorProto
+        'OneofDescriptor'     => 8,  // repeated OneofDescriptorProto oneof_decl = 8; message DescriptorProto
+        'ServiceDescriptor'   => 6,  // repeated ServiceDescriptorProto service = 6;
+        'MethodDescriptor'   => 2  // repeated MethodDescriptorProto method = 2;
     ];
 
     /**
@@ -81,7 +101,7 @@ trait DescriptorTrait
                     }
                 }
             } else {
-                throw new \Exception("un implemented situation");
+                throw new \Exception("unimplemented situation $name $pname");
             }
             array_unshift($path, $fieldNumber);
             $current = $parent;

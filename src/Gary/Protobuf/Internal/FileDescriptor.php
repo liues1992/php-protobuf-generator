@@ -34,12 +34,14 @@ namespace Gary\Protobuf\Internal;
 
 use Google\Protobuf\Internal\FileDescriptorProto;
 use Google\Protobuf\Internal\RepeatedField;
+use Google\Protobuf\Internal\ServiceDescriptorProto;
 use Google\Protobuf\Internal\SourceCodeInfo;
 use Google\Protobuf\Internal\SourceCodeInfo_Location;
 
 class FileDescriptor
 {
-   
+
+    protected $service = [];
     private $package;
     private $message_type = [];
     private $enum_type = [];
@@ -75,17 +77,32 @@ class FileDescriptor
     public function codeBySpan($span)
     {
         $arr = iterator_to_array($span->getIterator());
-        $startLine = $arr[0];
+        $startLine = (int)$arr[0];
         $startColumn = $arr[1];
-        $endLine = isset($arr[3]) ? $arr[2] : $startLine;
+        $endLine = (int)(isset($arr[3]) ? $arr[2] : $startLine);
         $endColumn = isset($arr[3]) ? $arr[3] : $arr[2];
         $line = isset($this->fileContent[$startLine]) ? $this->fileContent[$startLine] : null;
         if ($line === null) {
             throw new \RuntimeException("line $startLine not found in $this->name span :" . implode(",", $arr)
                 . "; line " . ($startLine + 1) . " col : " . ($startColumn + 1) . " file line count : " . count($this->fileContent));
         }
-        $str = substr($line, $startColumn, $endColumn - $startColumn + 1);
-        return $str;
+        $result = '';
+        for ($i = $startLine; $i <= $endLine; $i++) {
+            $line = $this->fileContent[$i];
+            if ($endLine > $startLine) {
+                if ($i === $endLine) {
+                    $result .= substr($line, 0, $endColumn + 1);
+                } else if ($i === $startLine){
+                    $result .= substr($line, $startColumn) . "\n";
+                } else {
+                    $result .= $line . "\n";
+                }
+            } else {
+                $result .= substr($line, $startColumn, $endColumn - $startColumn + 1);
+            }
+        }
+
+        return $result;
     }
 
     public function getName()
@@ -164,6 +181,15 @@ class FileDescriptor
         $this->enum_type[]= $desc;
     }
 
+    public function setService($service)
+    {
+        $this->service = $service;
+    }
+
+    public function getService()
+    {
+        return $this->service;
+    }
 
     /**
      * @param FileDescriptorProto $proto
@@ -194,6 +220,14 @@ class FileDescriptor
             $m->setIndex($i);
             $file->addEnumType($m);
         }
+
+        /** @var ServiceDescriptorProto $serviceProto */
+        foreach ($proto->getService() as $i => $serviceProto) {
+            $service = ServiceDescriptor::buildFromProto($serviceProto, $proto, "");
+            $service->setContaining($file);
+            $service->setIndex($i);
+            $file->addService($service);
+        }
         return $file;
     }
 
@@ -203,5 +237,10 @@ class FileDescriptor
     public function getFileContent()
     {
         return $this->fileContent;
+    }
+
+    public function addService($s)
+    {
+        $this->service[] = $s;
     }
 }

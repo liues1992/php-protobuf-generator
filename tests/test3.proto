@@ -52,8 +52,10 @@ message Baz
 	int32 id = 1;
 }
 
-service Item
+// hello service definition
+service Greeter
 {
+      // get by ids
       rpc getByIds (GetByIdsRequest) returns (GetByIdsResponse);
 }
 
