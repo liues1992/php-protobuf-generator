@@ -1,6 +1,6 @@
 # Introduction 
 Generate php protobuf code using php
-`./protoc-gen -o build tests/test3.proto`
+`./protoc-gen.php -o build tests/test3.proto`
 
 The generated message code is meant to work with Google protobuf's official php implementation:
 https://github.com/google/protobuf/tree/master/php
@@ -17,7 +17,7 @@ https://grpc.io/docs/quickstart/php.html#prerequisites
 # Usage
 - clone the code cd cd to the directory
 - `composer install`
-- `./protoc-gen -o build tests/test3.proto`
+- `./protoc-gen.php -o example tests/*.proto`
 
 ### Run test
 `composer test`
@@ -30,6 +30,10 @@ https://grpc.io/docs/quickstart/php.html#prerequisites
 - [ ] Add License
 - [ ] Custom generator support (write your own code generators by require this package)
 
+# Why do I need this instead of Google's default implementation?
+- Sometimes you wish to customize the generated code,
+which is complicated to do if you modify google/protobuf source code(c++) and recompile the protoc binary
+- Cool to generate php code using php.
 
 # How does it work
 That's a secret. Find out yourself.
