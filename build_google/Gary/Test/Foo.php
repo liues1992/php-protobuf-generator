@@ -129,6 +129,10 @@ class Foo extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>map<int32, .gary.test.Foo.Embedded> map_field = 28;</code>
      */
     private $map_field;
+    /**
+     * Generated from protobuf field <code>.gary.Imported imported_field = 29;</code>
+     */
+    private $imported_field = null;
 
     public function __construct() {
         \GPBMetadata\Tests\Test3::initOnce();
@@ -751,6 +755,28 @@ class Foo extends \Google\Protobuf\Internal\Message
     {
         $arr = GPBUtil::checkMapField($var, \Google\Protobuf\Internal\GPBType::INT32, \Google\Protobuf\Internal\GPBType::MESSAGE, \Gary\Test\Foo_Embedded::class);
         $this->map_field = $arr;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>.gary.Imported imported_field = 29;</code>
+     * @return \Gary\Imported
+     */
+    public function getImportedField()
+    {
+        return $this->imported_field;
+    }
+
+    /**
+     * Generated from protobuf field <code>.gary.Imported imported_field = 29;</code>
+     * @param \Gary\Imported $var
+     * @return $this
+     */
+    public function setImportedField($var)
+    {
+        GPBUtil::checkMessage($var, \Gary\Imported::class);
+        $this->imported_field = $var;
 
         return $this;
     }

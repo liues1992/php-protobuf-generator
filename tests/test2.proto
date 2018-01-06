@@ -1,0 +1,7 @@
+syntax="proto2";
+package gary.test2;
+// message comment??
+message Foo
+{
+    required int32 f1 = 1;
+}

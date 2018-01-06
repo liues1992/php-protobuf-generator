@@ -1,5 +1,7 @@
 syntax="proto3";
 package gary.test;
+import "tests/imported.proto";
+
 // message comment??
 message Foo
 {
@@ -31,6 +33,7 @@ message Foo
 	repeated Bar repeated_obj_field = 26;
 	repeated string repeated_string_field = 27;
 	map<int32, Embedded> map_field = 28;
+	Imported imported_field = 29;
 	enum Enum {
 	    EnumOne = 0; // enum comment
 	}

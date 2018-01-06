@@ -1,0 +1,6 @@
+syntax="proto3";
+package gary;
+message Imported
+{
+    int32 field1 = 1;
+}
