@@ -31,8 +31,12 @@ https://grpc.io/docs/quickstart/php.html#prerequisites
 - [ ] Custom generator support (write your own code generators by require this package)
 
 # Why do I need this instead of Google's default implementation?
-- Sometimes you wish to customize the generated code（e.g add convenience method in message class..),
-which is complicated to do if you modify google/protobuf source code(c++) and recompile the protoc binary
+- Sometimes you wish to customize the generated code,
+which is complicated to do if you modify google/protobuf source code(c++) and recompile the protoc binary.
+Think about above situations:
+    - Add convenience methods in message class..
+    - Support proto2
+    - Generate custom rpc code (if you are not using gRpc or you want it to use in PHP server side) 
 - Some bug in Google's generated code.
 ```
     public function setEnum($var)
