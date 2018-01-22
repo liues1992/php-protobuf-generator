@@ -13,6 +13,11 @@
             "Gary\\": "./src/Gary"
         }
     },
+    "bin": [
+        "protoc-gen.php",
+        "protoc-gen-plugin.php",
+        "protoc-gen-grpc-plugin.php"
+    ],
     "authors": [
         {
             "name": "Gary Lyn",
