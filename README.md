@@ -26,9 +26,7 @@ https://grpc.io/docs/quickstart/php.html#prerequisites
 # TODO
 - [ ] More test case
 - [ ] Pack to phar
-- [ ] Add to packagist
 - [ ] Support proto2
-- [ ] Add License
 - [ ] Custom generator support (write your own code generators by require this package)
 
 # Why do I need this instead of Google's default implementation?
