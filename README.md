@@ -15,11 +15,13 @@ https://grpc.io/docs/quickstart/php.html#prerequisites
 - protoc installed, version >= 3.5
 
 # Usage
-- clone the code cd cd to the directory
-- `composer install`
-- `./protoc-gen.php --out=example --grpc_out=example tests/*.proto` or use directly as plugin:
+- `composer require liues1992/php-protobuf-generator`
+- `./protoc-gen.php --out=build --grpc_out=build tests/*.proto` or use directly as plugin:
 
    `protoc --php-custom_out=build --plugin=protoc-gen-php-custom=protoc-gen-plugin.php --custom-grpc_out=build --plugin=protoc-gen-custom-grpc=protoc-gen-grpc-plugin.php tests/*.proto` 
+
+- See the [example](./example) folder for the generated code 
+   
 ### Run test
 `composer test`
 
