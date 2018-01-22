@@ -16,9 +16,10 @@ https://grpc.io/docs/quickstart/php.html#prerequisites
 
 # Usage
 - `composer require liues1992/php-protobuf-generator`
-- `./protoc-gen.php --out=build --grpc_out=build tests/*.proto` or use directly as plugin:
+- `./vendor/bin/protoc-gen.php --out=build --grpc_out=build tests/*.proto` or use directly as plugin:
 
-   `protoc --php-custom_out=build --plugin=protoc-gen-php-custom=protoc-gen-plugin.php --custom-grpc_out=build --plugin=protoc-gen-custom-grpc=protoc-gen-grpc-plugin.php tests/*.proto` 
+   `protoc --php-custom_out=build --plugin=protoc-gen-php-custom=./vendor/bin/protoc-gen-plugin.php \
+   --grpc-php_out=build --plugin=protoc-gen-grpc-php=./vendor/bin/protoc-gen-grpc-plugin.php tests/*.proto` 
 
 - See the [example](./example) folder for the generated code 
    
