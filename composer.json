@@ -1,48 +1,36 @@
 {
-    "name": "allegro/php-protobuf",
-    "description": "Google's Protocol Buffers for PHP",
+    "name": "liues1992/php-protobuf-generator",
+    "description": "Google's protobuf generator for PHP",
     "type": "library",
     "keywords": [
         "protocol buffers",
         "data",
         "pb"
     ],
-    "homepage": "https://github.com/allegro/php-protobuf",
+    "homepage": "https://github.com/liues1992/php-protobuf-generator",
     "autoload": {
         "psr-4": {
-            "Allegro\\": "./src/Allegro",
-            "Gary\\": "./src/Gary",
-            "Google\\Protobuf\\Internal\\": "./src/Google/Protobuf/Internal",
-            "GPBMetadata\\Google\\Protobuf\\Internal\\Compiler\\": "./src/GPBMetadata/Google/Protobuf/Internal/Compiler"
+            "Gary\\": "./src/Gary"
         }
     },
     "authors": [
         {
-            "name": "Hubert Jagodziński",
-            "email": "hubert.jagodzinski@allegro.pl",
-            "homepage": "https://github.com/hjagodzinski",
+            "name": "Gary Lyn",
+            "email": "liues1992@gmail.com",
+            "homepage": "https://github.com/liues1992",
             "role": "Original Author"
-        },
-        {
-            "name": "Mateusz Gajewski",
-            "email": "mateusz.gajewski@allegro.pl",
-            "homepage": "https://github.com/wendigo",
-            "role": "Contributor"
         }
     ],
     "support": {
-        "issues": "https://github.com/allegro/php-protobuf/issues"
+        "issues": "https://github.com/liues1992/php-protobuf-generator/issues"
     },
     "scripts": {
-        "test": "./vendor/bin/phpunit",
-        "post-install-cmd": [
-            "patch -p0 < google-protobuf.patch || true"
-        ]
+        "test": "./vendor/bin/phpunit"
     },
     "require": {
         "php": ">=5.3",
         "pear/console_commandline": "^1.2",
-        "google/protobuf": "^3.5"
+        "lvht/protobuf": "^3.5"
     },
     "require-dev": {
         "phpunit/phpunit": "^6.5"
