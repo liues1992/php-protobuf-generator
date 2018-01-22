@@ -17,10 +17,9 @@ https://grpc.io/docs/quickstart/php.html#prerequisites
 # Usage
 - clone the code cd cd to the directory
 - `composer install`
-- `./protoc-gen.php -o example tests/*.proto` or use directly as plugin:
+- `./protoc-gen.php --out=example --grpc_out=example tests/*.proto` or use directly as plugin:
 
-   `protoc --php-custom_out=example --plugin=protoc-gen-php-custom=protoc-gen-plugin.php tests/*.proto`
-
+   `protoc --php-custom_out=build --plugin=protoc-gen-php-custom=protoc-gen-plugin.php --custom-grpc_out=build --plugin=protoc-gen-custom-grpc=protoc-gen-grpc-plugin.php tests/*.proto` 
 ### Run test
 `composer test`
 

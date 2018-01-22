@@ -3,7 +3,7 @@
 namespace Gary\Protobuf\Compiler;
 
 use Gary\Protobuf\Generator\Logger;
-use Gary\Protobuf\Generator\PhpGenerator;
+use Gary\Protobuf\Generator\PhpMsgGenerator;
 use Gary\Protobuf\Internal\DescriptorBuilder;
 use Google\Protobuf\Internal\CodeGeneratorRequest;
 use Google\Protobuf\Internal\CodeGeneratorResponse;
@@ -13,7 +13,6 @@ class Compiler
 {
     const MINIMUM_PROTOC_VERSION = '3.4.0';
     const VERSION = '0.11.0';
-    const REQUEST_DATA_PATH = '/tmp/protoc_code_gen_req';
 
     /**
      * @var CodeGeneratorInterface
@@ -31,15 +30,8 @@ class Compiler
     public function runAsPlugin()
     {
         $data = file_get_contents('php://stdin');
-        $this->generateWithReqData($data, null, true);
+        $this->generateWithReqData($data);
     }
-
-    public function runAsBridge()
-    {
-        $data = file_get_contents('php://stdin');
-        file_put_contents(self::REQUEST_DATA_PATH, $data);
-    }
-
 
     /**
      * @return \Console_CommandLine_Result
@@ -70,6 +62,12 @@ class Compiler
             'default'     => 'protoc',
             'description' => 'The protoc compiler executable path.',
         ));
+        $parser->addOption('grpc_out', array(
+            'long_name'   => '--grpc_out',
+            'action'      => 'StoreString',
+            'default'     => false,
+            'description' => 'generator grpc code out put path, default false',
+        ));
 
         $parser->addArgument('file', array(
             'multiple'    => true,
@@ -85,10 +83,7 @@ class Compiler
         }
     }
 
-    /**
-     * @param string $pluginExecutable
-     */
-    public function run($pluginExecutable)
+    public function run()
     {
         $result = $this->parseArguments();
 
@@ -96,7 +91,13 @@ class Compiler
         $this->checkProtoc($protocExecutable);
 
         $cmd[] = $protocExecutable;
-        $cmd[] = '--plugin=protoc-gen-custom=' . escapeshellarg($pluginExecutable);
+        $cmd[] = '--plugin=protoc-gen-custom=' . escapeshellarg('protoc-gen-plugin.php');//$pluginExecutable);
+        $grpcOut = $result->options['grpc_out'];
+        if ($grpcOut) {
+            $cmd[] = '--plugin=protoc-gen-custom-grpc=' . escapeshellarg('protoc-gen-grpc-plugin.php');//$pluginExecutable);
+            $cmd[] = '--custom-grpc_out=' . escapeshellarg($grpcOut);
+        }
+
 
         if ($result->options['proto_path']) {
             foreach ($result->options['proto_path'] as $protoPath) {
@@ -117,22 +118,13 @@ class Compiler
             Logger::error('protoc exited with an exit status ' . $return . ' when executed with: ' . PHP_EOL
                 . '  ' . implode(" \\\n    ", $cmd));
             exit($return);
-        } else {
-            $requestData = file_get_contents(self::REQUEST_DATA_PATH);
-            if (!$requestData) {
-                Logger::error("cannot get protoc request");
-                exit(-1);
-            }
-            $this->generateWithReqData($requestData, $result, false);
         }
     }
 
     /**
-     * @param                             $data
-     * @param \Console_CommandLine_Result $args
-     * @param                             $isPlugin
+     * @param string $data
      */
-    private function generateWithReqData($data, $args, $isPlugin)
+    private function generateWithReqData($data)
     {
         $request = new CodeGeneratorRequest();
         try {
@@ -147,32 +139,7 @@ class Compiler
                 ->getFileDescriptors(iterator_to_array($request->getProtoFile()->getIterator()));
             $response = $generator->generate($request, $fileDescriptors);
             /** @var CodeGeneratorResponse_File $file */
-            if ($isPlugin) {
-                echo $response->serializeToString();
-            } else {
-                foreach ($response->getFile() as $file) {
-                    $name = rtrim($args->options['out'], "/") . "/" . $file->getName();
-                    $dirname = dirname($name);
-                    if (!is_dir($dirname)) {
-                        mkdir($dirname, 0777, true);
-                    }
-                    if ($file->getInsertionPoint()) {
-                        if (!file_exists($name)) {
-                            Logger::error("file must exist to apply a insertion point: " .
-                                $file->getInsertionPoint() . ", file name $name");
-                            exit(-1);
-                        } else {
-                            $point = $file->getInsertionPoint();
-                            str_replace("@@protoc_insertion_point($point)",
-                                $file->getContent(), file_get_contents($name));
-                        }
-                    } else {
-                        file_put_contents(
-                            $name,
-                            $file->getContent());
-                    }
-                }
-            }
+            echo $response->serializeToString();
         } catch (\Exception $ex) {
             Logger::error($ex->getMessage() . '.');
             exit(1);

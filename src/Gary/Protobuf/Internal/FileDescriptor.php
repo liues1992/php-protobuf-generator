@@ -150,12 +150,20 @@ class FileDescriptor
     public function getSourceCodeLocationForPath(array $path)
     {
         $v =  isset($this->path_to_location[implode(",", $path)]) ? $this->path_to_location[implode(",", $path)] :  null ;
-        if (!$v) {
-//            throw new \Exception(var_export(array_keys($this->path_to_location), true));
-        }
         return $v;
     }
-    
+
+
+    /**
+     * @param Descriptor|mixed $descriptor
+     *
+     * @return SourceCodeInfo_Location
+     */
+    public function getSourceCodeLocation($descriptor)
+    {
+        return $this->getSourceCodeLocationForPath($descriptor->getSourceCodePath());
+    }
+
     public function getPackage()
     {
         return $this->package;

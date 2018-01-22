@@ -115,6 +115,7 @@ trait DescriptorTrait
         return $path;
     }
 
+
     private function getClassShortName($obj)
     {
         $name = get_class($obj);
