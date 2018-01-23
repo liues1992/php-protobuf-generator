@@ -51,6 +51,7 @@ class FieldDescriptor
     private $packed;
     private $is_map;
     private $oneof_index = -1;
+    private $typeName = '';
 
     /**
      * Returns scalar type
@@ -61,6 +62,25 @@ class FieldDescriptor
     {
         return self::$_typeSimpleName[$this->getType()];
     }
+
+    private static $_protoTypeName = array(
+        GPBType::DOUBLE   => 'double',
+        GPBType::FLOAT    => 'float',
+        GPBType::INT64    => 'int64',
+        GPBType::UINT64   => 'uint64',
+        GPBType::INT32    => 'int32',
+        GPBType::FIXED64  => 'fixed64',
+        GPBType::FIXED32  => 'fixed32',
+        GPBType::BOOL     => 'bool',
+        GPBType::STRING   => 'string',
+        GPBType::GROUP    => 'group',   // 10
+        GPBType::BYTES    => 'bytes',
+        GPBType::UINT32   => 'uint32',
+        GPBType::SFIXED32 => 'sfixed32',
+        GPBType::SFIXED64 => 'sfixed64',
+        GPBType::SINT32   => 'sint32',
+        GPBType::SINT64   => 'sint64',
+    );
 
     private static $_typeSimpleName = array(
         GPBType::DOUBLE   => 'Double',
@@ -116,6 +136,14 @@ class FieldDescriptor
         } else {
             return null;
         }
+    }
+
+    public function getProtoTypeName()
+    {
+        if (isset(self::$_protoTypeName[$this->getType()])) {
+            return self::$_protoTypeName[$this->getType()];
+        }
+        return $this->getTypeName();
     }
 
     public function __construct()
@@ -306,6 +334,7 @@ class FieldDescriptor
         $field->setNumber($proto->getNumber());
         $field->setLabel($proto->getLabel());
         $field->setPacked($packed);
+        $field->setTypeName($proto->getTypeName());
         $field->setOneofIndex($oneof_index);
 
         // At this time, the message/enum type may have not been added to pool.
@@ -328,5 +357,21 @@ class FieldDescriptor
     public static function buildFromProto($proto)
     {
         return FieldDescriptor::getFieldDescriptor($proto);
+    }
+
+    /**
+     * @return string
+     */
+    public function getTypeName(): string
+    {
+        return $this->typeName;
+    }
+
+    /**
+     * @param string $typeName
+     */
+    public function setTypeName(string $typeName)
+    {
+        $this->typeName = $typeName;
     }
 }

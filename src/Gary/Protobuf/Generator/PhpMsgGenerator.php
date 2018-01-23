@@ -390,7 +390,6 @@ TAG;
         foreach ($fields as $i => $field) {
             $comment = new CommentStringBuffer(self::TAB, self::EOL);
             $comment->setIndentLevel($buffer->getIndentLevel());
-            $file->getFileContent();
 
             $this->appendCommentFromSourceCode($comment, $file, $field);
             $buffer->append($comment);
@@ -417,8 +416,6 @@ TAG;
         if (!$location) {
             throw new \RuntimeException("cannot get location, path: " . var_export($descriptor->getSourceCodePath(), true));
         }
-        $span = $location->getSpan();
-        $code = $file->codeBySpan($span);
         if ($location->getLeadingComments()) {
             $comment->append($location->getLeadingComments());
             if ($appendCodeInfo) {
@@ -433,7 +430,10 @@ TAG;
             }
         }
         if ($appendCodeInfo) {
-            $comment->append(sprintf("Generated from protobuf <code>$code</code>"));
+            if ($descriptor instanceof FieldDescriptor) {
+                $code = sprintf("%s %s = %s", $descriptor->getProtoTypeName(), $descriptor->getName(), $descriptor->getNumber());
+                $comment->append(sprintf("Generated from protobuf <code>$code</code>"));
+            }
         }
     }
 

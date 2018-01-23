@@ -3,6 +3,7 @@
 namespace Gary\Protobuf\Generator;
 
 use Gary\Protobuf\Compiler\CodeGeneratorInterface;
+use Gary\Protobuf\Internal\FieldDescriptor;
 use Gary\Protobuf\Internal\FileDescriptor;
 use Gary\Protobuf\Internal\MethodDescriptor;
 use Gary\Protobuf\Internal\ServiceDescriptor;
@@ -102,8 +103,6 @@ class PhpGrpcGenerator implements CodeGeneratorInterface
         if (!$location) {
             throw new \RuntimeException("cannot get location, path: " . var_export($descriptor->getSourceCodePath(), true));
         }
-        $span = $location->getSpan();
-        $code = $file->codeBySpan($span);
         if ($location->getLeadingComments()) {
             $comment->append($location->getLeadingComments());
             if ($appendCodeInfo) {
@@ -118,7 +117,10 @@ class PhpGrpcGenerator implements CodeGeneratorInterface
             }
         }
         if ($appendCodeInfo) {
-            $comment->append(sprintf("Generated from protobuf <code>$code</code>"));
+            if ($descriptor instanceof FieldDescriptor) {
+                $code = sprintf("%s %s = %s", $descriptor->getProtoTypeName(), $descriptor->getName(), $descriptor->getNumber());
+                $comment->append(sprintf("Generated from protobuf <code>$code</code>"));
+            }
         }
     }
 

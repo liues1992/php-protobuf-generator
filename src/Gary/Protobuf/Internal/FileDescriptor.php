@@ -49,8 +49,6 @@ class FileDescriptor
     private $name;
     private $source_code_info;
 
-    private $fileContent = [];
-
     public function setPackage($package)
     {
         $this->package = $package;
@@ -59,50 +57,7 @@ class FileDescriptor
     public function setName($name)
     {
         $this->name = $name;
-        if (!file_exists($name)) {
-            throw new \RuntimeException("file not found $name");
-        }
-        $content = file_get_contents($name);
-        $content = str_replace("\r\n", "\n", $content);
-        $content = str_replace("\t", "        ", $content);
-        $this->fileContent = explode("\n", $content);
         return;
-    }
-
-    /**
-     * @param RepeatedField $span
-     *
-     * @return string
-     */
-    public function codeBySpan($span)
-    {
-        $arr = iterator_to_array($span->getIterator());
-        $startLine = (int)$arr[0];
-        $startColumn = $arr[1];
-        $endLine = (int)(isset($arr[3]) ? $arr[2] : $startLine);
-        $endColumn = isset($arr[3]) ? $arr[3] : $arr[2];
-        $line = isset($this->fileContent[$startLine]) ? $this->fileContent[$startLine] : null;
-        if ($line === null) {
-            throw new \RuntimeException("line $startLine not found in $this->name span :" . implode(",", $arr)
-                . "; line " . ($startLine + 1) . " col : " . ($startColumn + 1) . " file line count : " . count($this->fileContent));
-        }
-        $result = '';
-        for ($i = $startLine; $i <= $endLine; $i++) {
-            $line = $this->fileContent[$i];
-            if ($endLine > $startLine) {
-                if ($i === $endLine) {
-                    $result .= substr($line, 0, $endColumn + 1);
-                } else if ($i === $startLine){
-                    $result .= substr($line, $startColumn) . "\n";
-                } else {
-                    $result .= $line . "\n";
-                }
-            } else {
-                $result .= substr($line, $startColumn, $endColumn - $startColumn + 1);
-            }
-        }
-
-        return $result;
     }
 
     public function getName()
@@ -239,13 +194,6 @@ class FileDescriptor
         return $file;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getFileContent()
-    {
-        return $this->fileContent;
-    }
 
     public function addService($s)
     {
