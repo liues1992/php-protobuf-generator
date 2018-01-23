@@ -51,8 +51,8 @@ class Compiler
         $parser->addOption('proto_path', array(
             'short_name'  => '-I',
             'long_name'   => '--proto_path',
-            'action'      => 'StoreArray',
-            'multiple'    => true,
+            'action'      => 'StoreString',
+            'multiple'    => false,
             'description' => 'The directory in which to search for imports.',
         ));
 
@@ -100,9 +100,7 @@ class Compiler
 
 
         if ($result->options['proto_path']) {
-            foreach ($result->options['proto_path'] as $protoPath) {
-                $cmd[] = '--proto_path=' . escapeshellarg($protoPath);
-            }
+            $cmd[] = '--proto_path=' . escapeshellarg($result->options['proto_path']);
         }
 
         $cmd[] = '--custom_out=' . escapeshellarg(':' . $result->options['out']);
@@ -112,7 +110,7 @@ class Compiler
         }
 
         $cmdStr = implode(' ', $cmd);
-        passthru($cmdStr, $return);
+        passthru("set -x; " . $cmdStr, $return);
 
         if ($return !== 0) {
             Logger::error('protoc exited with an exit status ' . $return . ' when executed with: ' . PHP_EOL
@@ -129,6 +127,7 @@ class Compiler
         $request = new CodeGeneratorRequest();
         try {
             $request->mergeFromString($data);
+
         } catch (\Exception $ex) {
             Logger::error('Unable to parse a message passed by protoc.' . $ex->getMessage() . '.');
             exit(1);

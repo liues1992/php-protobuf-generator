@@ -14,7 +14,7 @@ class Logger
      */
     public static function error($message)
     {
-        self::log(self::ERROR_LEVEL, $message);
+        self::log(self::ERROR_LEVEL, date('Y-m-d H:i:s') . ": " . $message);
     }
 
     /**
