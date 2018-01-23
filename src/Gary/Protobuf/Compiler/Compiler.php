@@ -91,10 +91,10 @@ class Compiler
         $this->checkProtoc($protocExecutable);
 
         $cmd[] = $protocExecutable;
-        $cmd[] = '--plugin=protoc-gen-custom=' . escapeshellarg('protoc-gen-plugin.php');//$pluginExecutable);
+        $cmd[] = '--plugin=protoc-gen-custom=' . escapeshellarg(PROJECT_ROOT . '/protoc-gen-plugin.php');//$pluginExecutable);
         $grpcOut = $result->options['grpc_out'];
         if ($grpcOut) {
-            $cmd[] = '--plugin=protoc-gen-custom-grpc=' . escapeshellarg('protoc-gen-grpc-plugin.php');//$pluginExecutable);
+            $cmd[] = '--plugin=protoc-gen-custom-grpc=' . escapeshellarg(PROJECT_ROOT . '/protoc-gen-grpc-plugin.php');//$pluginExecutable);
             $cmd[] = '--custom-grpc_out=' . escapeshellarg($grpcOut);
         }
 
