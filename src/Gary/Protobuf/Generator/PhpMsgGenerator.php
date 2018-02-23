@@ -34,7 +34,7 @@ class PhpMsgGenerator implements CodeGeneratorInterface
      * @var CodeGeneratorResponse_File[]
      */
     private $responseFiles = [];
-    private $customArguments;
+    private $customArguments = [];
 
     private function generateClass($shortName, $namespace, $content)
     {
@@ -66,13 +66,7 @@ class PhpMsgGenerator implements CodeGeneratorInterface
      */
     public function generate(CodeGeneratorRequest $request, $fileDescriptors): CodeGeneratorResponse
     {
-
-        $this->customArguments = array();
-        $parameter = $request->getParameter();
-        if ($parameter) {
-            parse_str($parameter, $this->customArguments);
-        }
-
+        $this->parseParameter($request->getParameter());
 
         $this->genMetadata($request);
 
@@ -87,6 +81,21 @@ class PhpMsgGenerator implements CodeGeneratorInterface
         $response = new CodeGeneratorResponse();
         $response->setFile($this->responseFiles);
         return $response;
+    }
+
+    private function parseParameter($parameter_str)
+    {
+        $parameters = explode(',', $parameter_str);
+
+        foreach ($parameters as $parameter) {
+            $parts = explode('=', $parameter);
+            if (count($parts) === 2) {
+                $name = trim($parts[0]);
+                $value = trim($parts[1]);
+
+                $this->customArguments[$name] = $value;
+            }
+        }
     }
 
     private function getClassFilename($className, $namespaceName)
@@ -259,7 +268,11 @@ TAG;
          */
         $fullName = $this->_createClassName($descriptor);
         $shortName = $this->getClassShortName($fullName);
-        $buffer->append('class ' . $shortName . ' extends \Google\Protobuf\Internal\Message')
+        $baseMessage = $this->customArguments['base_message'];
+        if (!$baseMessage) {
+            $baseMessage = '\Google\Protobuf\Internal\Message';
+        }
+        $buffer->append("class $shortName extends $baseMessage")
             ->append('{')
             ->incrIndentation();
 
@@ -325,8 +338,8 @@ TAG;
      */
     private function _createNamespaceName($descriptor)
     {
-        if (isset($this->customArguments['options']['namespace'])) {
-            return $this->customArguments['options']['namespace'];
+        if (isset($this->customArguments['namespace'])) {
+            return $this->customArguments['namespace'];
         }
 
         $t = $descriptor->getClass();
