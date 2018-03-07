@@ -161,12 +161,20 @@ TAG;
             foreach ($proto->getDependency() as $dependency) {
                 $buffer->append($this->_initCodeWithFilename($dependency));
             }
-            $buffer->append("\$pool->internalAddGeneratedFile(hex2bin(");
-            $hex = bin2hex($binary);
-            $hexArr = str_split($hex, 60);
-            $hexRes = implode("\" . \n            \"", $hexArr);
+            $buffer->append("\$pool->internalAddGeneratedFile(");
+            $hexArr = str_split(bin2hex($binary), 30);
+
+            foreach ($hexArr as $hex) {
+                $escapeHex = "";
+                for ($i = 0; $i < strlen($hex); $i += 2) {
+                    $escapeHex .= "\\x".$hex[$i].$hex[$i+1];
+                }
+                $escapeHexArr[] = $escapeHex;
+            }
+
+            $hexRes = implode("\" . \n            \"", $escapeHexArr);
             $buffer->append('    "' . $hexRes . '"', true);
-            $buffer->append("));");
+            $buffer->append(");");
             $buffer->append("static::\$is_initialized = true;");
             $buffer->decrIndentation();
             $buffer->append("}");
