@@ -162,12 +162,15 @@ TAG;
                 $buffer->append($this->_initCodeWithFilename($dependency));
             }
             $buffer->append("\$pool->internalAddGeneratedFile(");
-            $hexArr = str_split(bin2hex($binary), 30);
+            $hexStr = bin2hex($binary);
+            $hexArr = str_split($hexStr, 30);
 
+            $escapeHexArr = [];
             foreach ($hexArr as $hex) {
                 $escapeHex = "";
                 for ($i = 0; $i < strlen($hex); $i += 2) {
                     $escapeHex .= "\\x".$hex[$i].$hex[$i+1];
+
                 }
                 $escapeHexArr[] = $escapeHex;
             }
@@ -276,7 +279,7 @@ TAG;
          */
         $fullName = $this->_createClassName($descriptor);
         $shortName = $this->getClassShortName($fullName);
-        $baseMessage = $this->customArguments['base_message'];
+        $baseMessage = $this->customArguments['base_message'] ?? '';
         if (!$baseMessage) {
             $baseMessage = '\Google\Protobuf\Internal\Message';
         }
