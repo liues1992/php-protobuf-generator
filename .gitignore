@@ -3,3 +3,4 @@ vendor
 build
 .DS_Store
 tests/build
+composer.lock

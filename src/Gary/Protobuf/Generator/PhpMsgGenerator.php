@@ -417,7 +417,42 @@ TAG;
 
             $this->appendCommentFromSourceCode($comment, $file, $field);
             $buffer->append($comment);
-            $buffer->append('private $' . $field->getName() . ';')->newline();
+            $defaultValue = 'null';
+            $msgType = $field->getType();
+            switch ($msgType) {
+                case GPBType::DOUBLE :
+                case GPBType::FLOAT     :
+                case GPBType::FIXED64   :
+                case GPBType::FIXED32   :
+                case GPBType::SFIXED32  :
+                case GPBType::SFIXED64  :
+                    $defaultValue = '0.0';
+                    break;
+
+                case GPBType::SINT32    :
+                case GPBType::INT64     :
+                case GPBType::SINT64    :
+                case GPBType::UINT64    :
+                case GPBType::INT32     :
+                case GPBType::UINT32    :
+                case GPBType::ENUM      :
+                    $defaultValue = '0';
+                    break;
+                case GPBType::BOOL      :
+                    $defaultValue = 'false';
+                    break;
+                case GPBType::BYTES     :
+                case GPBType::STRING    :
+                    $defaultValue = "''";
+                    break;
+                case GPBType::GROUP     :
+                case GPBType::MESSAGE   :
+                default:
+            }
+            if (($field->isRepeated() || $field->isMap())) {
+                $defaultValue = '[]';
+            }
+            $buffer->append('private $' . $field->getName() . " = $defaultValue;")->newline();
         }
 
         $this->_createClassConstructor($buffer, $file);
@@ -455,7 +490,11 @@ TAG;
         }
         if ($appendCodeInfo) {
             if ($descriptor instanceof FieldDescriptor) {
-                $code = sprintf("%s %s = %s", $descriptor->getProtoTypeName(), $descriptor->getName(), $descriptor->getNumber());
+                $preType = '';
+                if ($descriptor->isRepeated()) {
+                    $preType = 'repeated ';
+                }
+                $code = sprintf("%s%s %s = %s", $preType, $descriptor->getProtoTypeName(), $descriptor->getName(), $descriptor->getNumber());
                 $comment->append(sprintf("Generated from protobuf <code>$code</code>"));
             }
         }

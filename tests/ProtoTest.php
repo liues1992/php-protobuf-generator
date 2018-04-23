@@ -19,5 +19,8 @@ class ProtoTest extends \PHPUnit\Framework\TestCase
         $foo2 = new \Gary\Test\Foo();
         $foo2->mergeFromString($str);
         $this->assertEquals($foo2->getStringField(), $input);
+        $this->assertEquals(0, $foo2->getInt32Field());
+        $this->assertEquals(true, is_array($foo->getBoolPackedField())
+            || $foo->getBoolPackedField() instanceof \Google\Protobuf\Internal\RepeatedField);
     }
 }
