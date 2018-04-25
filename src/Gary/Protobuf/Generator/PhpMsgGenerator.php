@@ -175,7 +175,7 @@ TAG;
                 $escapeHexArr[] = $escapeHex;
             }
 
-            $hexRes = implode("\" . \n            \"", $escapeHexArr);
+            $hexRes = implode("\" .\n            \"", $escapeHexArr);
             $buffer->append('    "' . $hexRes . '"', true);
             $buffer->append(");");
             $buffer->append("static::\$is_initialized = true;");
@@ -242,7 +242,7 @@ TAG;
 
         $namespaceName = $this->_createNamespaceName($descriptor);
         if ($namespaceName) {
-            $buffer->append('namespace ' . $namespaceName . ';');
+            $buffer->append('namespace ' . $namespaceName . ';')->newline();
         }
         $buffer->append('use Google\Protobuf\Internal\GPBType;');
         $buffer->append('use Google\Protobuf\Internal\RepeatedField;');
@@ -667,6 +667,10 @@ TAG;
 
     private function _initCodeWithFilename($filename)
     {
+        if (strpos($filename, 'google/protobuf') === 0) {
+            return '';
+        }
+
         $name = preg_replace('/(.*)(\.[\w\d]+)$/', '$1', $filename);
         $fileNamespace = implode("\\", array_map('ucfirst', explode('/', $name)));
         return sprintf('\GPBMetadata\%s::initOnce();', $fileNamespace);

@@ -46,7 +46,7 @@ class CodeStringBuffer
      */
     public function append($lines, $newline = true, $indentOffset = 0)
     {
-        $this->_buffer[] = $this->_getIndentationString($indentOffset) . $lines;
+        $this->_buffer[] = trim($lines) ? ($this->_getIndentationString($indentOffset) . $lines) : $lines;
         if ($newline) {
             $this->_buffer[] = $this->newLineStr;
         }
