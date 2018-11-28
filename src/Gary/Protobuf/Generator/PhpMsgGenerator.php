@@ -129,8 +129,7 @@ class PhpMsgGenerator implements CodeGeneratorInterface
 
             $buffer = new CodeStringBuffer(self::TAB, self::EOL);
             $filename = $proto->getName();
-            $filenameNoExt = preg_replace('/(.*)(\.[\w\d]+)$/', '$1', $proto->getName()); // file name without suffix
-            $filenameParts = array_map('ucfirst', explode('/', $filenameNoExt));
+            $filenameParts = $this->fileNameToNamespaceParts($filename);
             array_unshift($filenameParts, 'GPBMetadata');
             $shortClassName = $filenameParts[count($filenameParts) - 1];
             array_pop($filenameParts);
@@ -169,7 +168,7 @@ TAG;
             foreach ($hexArr as $hex) {
                 $escapeHex = "";
                 for ($i = 0; $i < strlen($hex); $i += 2) {
-                    $escapeHex .= "\\x".$hex[$i].$hex[$i+1];
+                    $escapeHex .= "\\x" . $hex[$i] . $hex[$i + 1];
 
                 }
                 $escapeHexArr[] = $escapeHex;
@@ -671,9 +670,24 @@ TAG;
             return '';
         }
 
-        $name = preg_replace('/(.*)(\.[\w\d]+)$/', '$1', $filename);
-        $fileNamespace = implode("\\", array_map('ucfirst', explode('/', $name)));
-        return sprintf('\GPBMetadata\%s::initOnce();', $fileNamespace);
+        $fileNamespaceParts = $this->fileNameToNamespaceParts($filename);
+        return sprintf('\GPBMetadata\%s::initOnce();', implode("\\", $fileNamespaceParts));
+    }
+
+    /**
+     * @param string $name path/to.com/file
+     *
+     * @return array [Path, ToCom, File]
+     */
+    private function fileNameToNamespaceParts(string $name)
+    {
+        $name = preg_replace('/(.*)(\.[\w\d]+)$/', '$1', $name);
+        return array_map(function ($e) {
+            $e = ucfirst($e);
+            $e = implode("", array_map('ucfirst', explode(".", $e)));
+            $e = implode("", array_map('ucfirst', explode("-", $e)));
+            return $e;
+        }, explode('/', $name));
     }
 
 }
