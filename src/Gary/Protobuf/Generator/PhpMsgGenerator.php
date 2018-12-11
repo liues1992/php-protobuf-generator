@@ -538,7 +538,7 @@ TAG;
                 $tmpType = 'GPBType::MESSAGE, \\' . $valueField->getMessageType()->getClass() . "::class";
             } else {
                 $tmpType =
-                    'GPBType::' . strtoupper($field->getMessageType()->getFieldByNumber(1)->getSimpleTypeName());
+                    'GPBType::' . strtoupper($valueField->getSimpleTypeName());
             }
             $checkLine = sprintf('$value = GPBUtil::checkMapField($value, GPBType::%s, %s);',
                 strtoupper($field->getMessageType()->getFieldByNumber(1)->getSimpleTypeName()),
